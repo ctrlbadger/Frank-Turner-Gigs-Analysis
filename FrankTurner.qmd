@@ -1,0 +1,142 @@
+---
+title: "FrankTurner"
+---
+
+# Prerequisites
+
+```{r}
+# Visualisations
+library(ggplot2)
+# Tidyverse - Everything
+library(tidyverse)
+# Paths
+library(here)
+
+library(lubridate)
+
+library(stringi)
+
+```
+
+
+# Wrangling
+
+```{r}
+# Import Data
+gigs <- read_csv("data_raw/FrankTurnerGigs.csv", 
+                 col_types = cols_only(ID = col_guess(), Raw = col_guess())) |>
+  rename(id = ID, gig_text = Raw)
+
+gigs$gig_text <- gigs$gig_text |> stri_enc_toutf8()
+```
+
+```{r}
+# Split Data
+
+gigs$gig_split_list <- gigs$gig_text |> 
+  str_split("@", n=2)
+
+gigs <- gigs |> 
+  unnest_wider(gig_split_list, names_sep = "_") |>
+  rename(date_text = gig_split_list_1, location_text = gig_split_list_2)
+
+```
+
+```{r}
+
+gigs <- gigs |> mutate(
+  gig_date = dmy(date_text),
+  gig_year = year(gig_date),
+  gig_month = month(gig_date, label = TRUE),
+  gig_day = wday(gig_date, label=TRUE)
+)
+```
+
+# Date Summary Statistics
+
+How many gigs per year? 
+```{r}
+gigs |> group_by(gig_year) |> summarise(n=n())
+```
+
+How many gigs per month
+```{r}
+gigs |> group_by(gig_month) |> summarise(n=n())
+```
+
+What are the most popular days for gigs?
+
+```{r} 
+gigs |> group_by(gig_day) |> summarise(n=n())
+
+gigs_table_year_date <- gigs %>%
+  group_by(gig_year, gig_day) %>%
+  tally() %>%
+  spread(gig_day, n, fill=0) |> relocate(Sun, .after=Sat)
+
+gigs_table_year_date 
+```
+
+
+How many gigs per year and per month in a table?
+```{r}
+gigs_date_table <- table(gigs$gig_year, gigs$gig_month)
+
+gigs_date_table
+```
+Cross Tabulation with Tidyverse
+```{r}
+gigs_contingency <- gigs %>%
+  group_by(gig_year, gig_month) %>%
+  tally() %>%
+  spread(gig_month, n, fill=0)
+
+gigs_contingency
+```
+
+
+```{r}
+library(ggpubr)
+
+
+gigs %>%
+  group_by(gig_month, gig_year) %>%
+  tally() |>
+  spread(gig_year, n) |> 
+  column_to_rownames(var = "gig_month") |>
+  ggballoonplot(fill="value") + 
+    scale_fill_gradient2() + 
+    guides(fill="none") +
+    labs(title="Frank Turner Gigs 2004 - 2025")
+```
+
+# Location Summary Statistics
+
+```{r}
+gigs <- gigs |> 
+  mutate(
+    location_part = location_text |> str_split(",") |> modify(function(x) rev(x)) 
+  ) |>
+  unnest_wider(location_part, names_sep = "_")
+
+gigs <- gigs |> 
+  mutate(
+    location_part_1 = str_trim(location_part_1)
+  )
+```
+
+
+What countries has Frank been to the most?
+
+```{r}
+gigs |> group_by(location_part_1) |> 
+  summarise(n = n()) |> 
+  arrange(desc(n)) |> rename(country = location_part_1)
+```
+Most popular cities/states?
+```{r}
+gigs |> group_by(location_part_2) |> 
+  summarise(n = n()) |> 
+  arrange(desc(n))
+```
+# Conclusions
