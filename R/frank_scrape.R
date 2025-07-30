@@ -49,7 +49,6 @@ get_other_gigs <- function(url_other_gigs) {
        million_dead = million_dead,
        record_buying_public = record_buying_public,
        kneejerk = kneejerk)
-  
 }
 
 gigs_main_raw <- get_live_gigs(url_live_gigs)
