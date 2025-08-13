@@ -111,6 +111,8 @@ What are the most popular days for gigs?
 ```{r}
 gigs_main |> group_by(gig_day) |> summarise(n=n())
 
+gigs |> group_by(gig_date) |> mutate(total_gigs_on_day = n()) |> arrange(desc(total_gigs_on_day))
+
 gigs_table_year_date <- gigs %>%
   group_by(gig_year, gig_day) %>%
   tally() %>%
@@ -176,7 +178,7 @@ gigs_main <- gigs_main |>
   ) |>
   unnest_wider(location_part, names_sep = "_")
 
-gigs_main <- gigs_main |> 
+c <- gigs_main |> 
   mutate(
     location_part_1 = str_trim(location_part_1)
   )
@@ -185,6 +187,13 @@ gigs_main <- gigs_main |>
 What countries has Frank been to the most?
 
 ```{r}
+
+
+gigs_main |> group_by(location_part_1) |> 
+  summarise(n = n()) |> 
+  rename(country = location_part_1) |> 
+  arrange(desc(n)) 
+
 gigs_country_sum <- gigs_main |> group_by(location_part_1, gig_year) |> 
   summarise(n = n()) |> 
   rename(country = location_part_1) |> 
@@ -197,7 +206,7 @@ gigs_country_sum |> spread(gig_year, n, fill=NA) |>
   column_to_rownames(var = "country") |> 
   ggpubr::ggballoonplot(fill = "value", show.label = TRUE, size.range = c(5, 15)) +
   guides(fill = FALSE) +
-    labs(title="Frank Turner Gigs by Country") +
+    labs(title="Frank Turner Solo Gigs by Country") +
     gradient_fill(c("white", "red"))
 
 
