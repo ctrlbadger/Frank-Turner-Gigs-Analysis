@@ -117,45 +117,91 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-stderr">
 <pre><code>here() starts at C:/Users/ctrlb/Github/FrankTurner</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringi)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"frank_scrape.R"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'rvest'
+
+The following object is masked from 'package:readr':
+
+    guess_encoding</code></pre>
+</div>
+</div>
+</section>
+<section id="downloading" class="level1">
+<h1>Downloading</h1>
+<p>The most up-to-date Frank Turner gig data is downloaded from <a href="https://frank-turner.com/basic-archive/" class="uri">https://frank-turner.com/basic-archive/</a>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>url_main_gigs <span class="ot">&lt;-</span> <span class="st">"https://frank-turner.com/basic-archive/"</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>url_other_gigs <span class="ot">&lt;-</span> <span class="st">"https://frank-turner.com/md-archive/"</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>gigs_main_raw_text <span class="ot">&lt;-</span> <span class="fu">get_live_gigs</span>(url_main_gigs)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>gigs_other_raw_text <span class="ot">&lt;-</span> <span class="fu">get_other_gigs</span>(url_other_gigs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="cleaning" class="level1">
+<h1>Cleaning</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>gigs_other_raw_text<span class="sc">$</span>million_dead[<span class="dv">209</span>] <span class="ot">&lt;-</span> <span class="st">"1st May 2025, Newcastle Cluny"</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>gigs_other_raw_text<span class="sc">$</span>kneejerk[<span class="fu">c</span>(<span class="dv">16</span>, <span class="dv">17</span>)] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"25th September 1999 – London (venue unknown)"</span>, </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"24th October 1999 – The Ferryboat, Norwich"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="wrangling" class="level1">
 <h1>Wrangling</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import Data</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>gigs <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data_raw/FrankTurnerGigs.csv"</span>, </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">col_types =</span> <span class="fu">cols_only</span>(<span class="at">ID =</span> <span class="fu">col_guess</span>(), <span class="at">Raw =</span> <span class="fu">col_guess</span>())) <span class="sc">|&gt;</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">id =</span> ID, <span class="at">gig_text =</span> Raw)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>New names:
-• `` -&gt; `...6`</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Split Data</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>gigs<span class="sc">$</span>gig_split_list <span class="ot">&lt;-</span> gigs<span class="sc">$</span>gig_text <span class="sc">|&gt;</span> </span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_split</span>(<span class="st">"@"</span>, <span class="at">n=</span><span class="dv">2</span>)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>gigs <span class="ot">&lt;-</span> gigs <span class="sc">|&gt;</span> </span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_wider</span>(gig_split_list, <span class="at">names_sep =</span> <span class="st">"_"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">date_text =</span> gig_split_list_1, <span class="at">location_text =</span> gig_split_list_2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>make_gig_table <span class="ot">&lt;-</span> <span class="cf">function</span>(gig_raw_text, type_name) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">gig_text =</span> gig_raw_text, <span class="at">gig_number =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(gig_raw_text), <span class="at">type=</span>type_name)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>} </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>gigs_main <span class="ot">&lt;-</span> <span class="fu">make_gig_table</span>(gigs_main_raw_text, <span class="st">"solo"</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>gigs_mingle_harde <span class="ot">&lt;-</span> <span class="fu">make_gig_table</span>(gigs_other_raw_text<span class="sc">$</span>mingle_harde, <span class="st">"mingle_harde"</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>gigs_million_dead <span class="ot">&lt;-</span> <span class="fu">make_gig_table</span>(gigs_other_raw_text<span class="sc">$</span>million_dead, <span class="st">"million_dead"</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>gigs_record_buying_public <span class="ot">&lt;-</span> <span class="fu">make_gig_table</span>(gigs_other_raw_text<span class="sc">$</span>record_buying_public, <span class="st">"record_buying_public"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>gigs_kneejerk <span class="ot">&lt;-</span> <span class="fu">make_gig_table</span>(gigs_other_raw_text<span class="sc">$</span>kneejerk, <span class="st">"kneejerk"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>gigs <span class="ot">&lt;-</span> gigs <span class="sc">|&gt;</span> <span class="fu">mutate</span>(</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">gig_date =</span> <span class="fu">dmy</span>(date_text),</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">gig_year =</span> <span class="fu">year</span>(gig_date),</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">gig_month =</span> <span class="fu">month</span>(gig_date, <span class="at">label =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">gig_day =</span> <span class="fu">wday</span>(gig_date, <span class="at">label=</span><span class="cn">TRUE</span>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Split Data</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>add_date_columns <span class="ot">&lt;-</span> <span class="cf">function</span>(df) {</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">|&gt;</span> <span class="fu">mutate</span>(</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">gig_date =</span> <span class="fu">dmy</span>(date_text),</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">gig_year =</span> <span class="fu">year</span>(gig_date),</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">gig_month =</span> <span class="fu">month</span>(gig_date, <span class="at">label =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">gig_day =</span> <span class="fu">wday</span>(gig_date, <span class="at">label=</span><span class="cn">TRUE</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>gigs_main <span class="ot">&lt;-</span> gigs_main <span class="sc">|&gt;</span> </span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    gig_text, <span class="at">delim =</span> <span class="st">"@"</span>, <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"date_text"</span>, <span class="st">"location_text"</span>), <span class="at">too_many =</span> <span class="st">"merge"</span>, <span class="at">cols_remove =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_date_columns</span>()</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>gigs_mingle_harde <span class="ot">&lt;-</span> gigs_mingle_harde <span class="sc">|&gt;</span> </span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    gig_text, <span class="at">delim =</span> <span class="st">"@"</span>, <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"date_text"</span>, <span class="st">"location_text"</span>), <span class="at">too_many =</span> <span class="st">"merge"</span>, <span class="at">cols_remove =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_date_columns</span>()</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>gigs_million_dead <span class="ot">&lt;-</span> gigs_million_dead <span class="sc">|&gt;</span> </span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    gig_text, <span class="at">delim =</span> <span class="st">","</span>, <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"date_text"</span>, <span class="st">"location_text"</span>), <span class="at">too_many =</span> <span class="st">"merge"</span>, <span class="at">cols_remove =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_date_columns</span>()</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>gigs_kneejerk <span class="ot">&lt;-</span> gigs_kneejerk <span class="sc">|&gt;</span> </span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    gig_text, <span class="at">delim =</span> <span class="st">"–"</span>, <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"date_text"</span>, <span class="st">"location_text"</span>), <span class="at">too_many =</span> <span class="st">"merge"</span>, <span class="at">cols_remove =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_date_columns</span>()</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>gigs <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(gigs_main, gigs_mingle_harde, gigs_million_dead, gigs_kneejerk)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="date-summary-statistics" class="level1">
 <h1>Date Summary Statistics</h1>
 <p>How many gigs per year?</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>gigs <span class="sc">|&gt;</span> <span class="fu">group_by</span>(gig_year) <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">n=</span><span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>gigs_main <span class="sc">|&gt;</span> <span class="fu">group_by</span>(gig_year) <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">n=</span><span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 22 × 2
    gig_year     n
@@ -175,7 +221,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>How many gigs per month</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>gigs <span class="sc">|&gt;</span> <span class="fu">group_by</span>(gig_month) <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">n=</span><span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>gigs_main <span class="sc">|&gt;</span> <span class="fu">group_by</span>(gig_month) <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">n=</span><span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 12 × 2
    gig_month     n
@@ -186,8 +232,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  4 Apr         276
  5 May         293
  6 Jun         302
- 7 Jul         254
- 8 Aug         221
+ 7 Jul         257
+ 8 Aug         225
  9 Sep         285
 10 Oct         295
 11 Nov         281
@@ -196,48 +242,49 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>What are the most popular days for gigs?</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>gigs <span class="sc">|&gt;</span> <span class="fu">group_by</span>(gig_day) <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">n=</span><span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>gigs_main <span class="sc">|&gt;</span> <span class="fu">group_by</span>(gig_day) <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">n=</span><span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 7 × 2
   gig_day     n
   &lt;ord&gt;   &lt;int&gt;
-1 Sun       436
+1 Sun       437
 2 Mon       299
 3 Tue       366
 4 Wed       398
-5 Thu       452
-6 Fri       551
-7 Sat       556</code></pre>
+5 Thu       454
+6 Fri       553
+7 Sat       558</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>gigs_table_year_date <span class="ot">&lt;-</span> gigs <span class="sc">%&gt;%</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gig_year, gig_day) <span class="sc">%&gt;%</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tally</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread</span>(gig_day, n, <span class="at">fill=</span><span class="dv">0</span>) <span class="sc">|&gt;</span> <span class="fu">relocate</span>(Sun, <span class="at">.after=</span>Sat)</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>gigs_table_year_date </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>gigs_table_year_date <span class="ot">&lt;-</span> gigs <span class="sc">%&gt;%</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gig_year, gig_day) <span class="sc">%&gt;%</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tally</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread</span>(gig_day, n, <span class="at">fill=</span><span class="dv">0</span>) <span class="sc">|&gt;</span> <span class="fu">relocate</span>(Sun, <span class="at">.after=</span>Sat)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>gigs_table_year_date </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 22 × 8
-# Groups:   gig_year [22]
+<pre><code># A tibble: 28 × 8
+# Groups:   gig_year [28]
    gig_year   Mon   Tue   Wed   Thu   Fri   Sat   Sun
       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
- 1     2004     0     0     0     0     0     1     0
- 2     2005     2     2     3     6     6     3     6
- 3     2006    19    24    22    25    23    29    30
- 4     2007    27    21    26    27    29    28    24
- 5     2008    15    22    26    30    32    30    23
- 6     2009    16    25    26    38    46    31    28
- 7     2010    19    25    29    28    35    36    34
- 8     2011    23    19    23    31    34    30    25
- 9     2012    17    17    19    24    28    30    23
-10     2013    23    21    25    21    37    42    27
-# ℹ 12 more rows</code></pre>
+ 1     1998     0     0     0     0     1     0     0
+ 2     1999     3     1     2     2     3     3     3
+ 3     2000     2     0     0     1     1     4     1
+ 4     2001     0     1     0     2     0     1     3
+ 5     2002     2     3     4     8     2     4     4
+ 6     2003     4     6     9    10    17    17    11
+ 7     2004     8     8     5     8    11    17    11
+ 8     2005    11    12    12    16    20    16    14
+ 9     2006    19    24    22    25    23    29    30
+10     2007    27    21    26    27    29    28    24
+# ℹ 18 more rows</code></pre>
 </div>
 </div>
 <p>How many gigs per year and per month in a table?</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>gigs_date_table <span class="ot">&lt;-</span> <span class="fu">table</span>(gigs<span class="sc">$</span>gig_year, gigs<span class="sc">$</span>gig_month)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>gigs_date_table</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>gigs_date_table <span class="ot">&lt;-</span> <span class="fu">table</span>(gigs_main<span class="sc">$</span>gig_year, gigs_main<span class="sc">$</span>gig_month)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>gigs_date_table</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      
        Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
@@ -262,17 +309,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   2022   1   3   9  20  11  22  28   1  15  11   7  11
   2023  12   9   4  12  15  14   4  12  16   7   9   2
   2024   0   1  13   6  32  22  16  10  15  13  15   6
-  2025   8   6  11  15  21   6   5   0   0   0   0   0</code></pre>
+  2025   8   6  11  15  21   6   8   4   0   0   0   0</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>gigs <span class="sc">|&gt;</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(gig_month, <span class="at">fill =</span> type)) <span class="sc">+</span> </span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">stat =</span> <span class="st">"count"</span>) <span class="sc">+</span> </span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(gig_year)) <span class="sc">+</span> </span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust=</span><span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">fill =</span> <span class="st">"Project"</span>, <span class="at">title =</span> <span class="st">"Frank Turner Gigs by Project"</span>, <span class="at">y =</span> <span class="st">"Count"</span>, <span class="at">x =</span> <span class="st">"Month"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in geom_histogram(stat = "count"): Ignoring unknown parameters:
+`binwidth`, `bins`, and `pad`</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="FrankTurner_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># gigs_main |&gt; ggplot(aes(location_part_1)) + </span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   geom_col() + </span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   facet_wrap(vars(gig_year)) + </span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   labs(fill = "Project", title = "Frank Turner Solo Gigs by Location", y = "Count", x = "Month")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Cross Tabulation with Tidyverse</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>gigs_contingency <span class="ot">&lt;-</span> gigs <span class="sc">%&gt;%</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gig_year, gig_month) <span class="sc">%&gt;%</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tally</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread</span>(gig_month, n, <span class="at">fill=</span><span class="dv">0</span>)</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>gigs_contingency</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>gigs_contingency <span class="ot">&lt;-</span> gigs_main <span class="sc">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gig_year, gig_month) <span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tally</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread</span>(gig_month, n, <span class="at">fill=</span><span class="dv">0</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>gigs_contingency</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 22 × 13
 # Groups:   gig_year [22]
@@ -293,63 +359,117 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggpubr)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>gigs <span class="sc">%&gt;%</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gig_month, gig_year) <span class="sc">%&gt;%</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tally</span>() <span class="sc">|&gt;</span></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread</span>(gig_year, n) <span class="sc">|&gt;</span> </span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_to_rownames</span>(<span class="at">var =</span> <span class="st">"gig_month"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggballoonplot</span>(<span class="at">fill=</span><span class="st">"value"</span>) <span class="sc">+</span> </span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_gradient2</span>() <span class="sc">+</span> </span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">fill=</span><span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Frank Turner Gigs 2004 - 2025"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggpubr)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>gigs_main <span class="sc">%&gt;%</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gig_month, gig_year) <span class="sc">%&gt;%</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tally</span>() <span class="sc">|&gt;</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread</span>(gig_year, n) <span class="sc">|&gt;</span> </span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_to_rownames</span>(<span class="at">var =</span> <span class="st">"gig_month"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  ggpubr<span class="sc">::</span><span class="fu">ggballoonplot</span>(<span class="at">fill=</span><span class="st">"value"</span>) <span class="sc">+</span> </span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_gradient2</span>() <span class="sc">+</span> </span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">fill=</span><span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Frank Turner Gigs 2004 - 2025"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 24 rows containing missing values or values outside the scale range
+<pre><code>Warning: Removed 23 rows containing missing values or values outside the scale range
 (`geom_point()`).</code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="FrankTurner_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+<p><img src="FrankTurner_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
 <section id="location-summary-statistics" class="level1">
 <h1>Location Summary Statistics</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>gigs <span class="ot">&lt;-</span> gigs <span class="sc">|&gt;</span> </span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">location_part =</span> location_text <span class="sc">|&gt;</span> <span class="fu">str_split</span>(<span class="st">","</span>) <span class="sc">|&gt;</span> <span class="fu">modify</span>(<span class="cf">function</span>(x) <span class="fu">rev</span>(x)) </span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_wider</span>(location_part, <span class="at">names_sep =</span> <span class="st">"_"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>gigs_main <span class="ot">&lt;-</span> gigs_main <span class="sc">|&gt;</span> </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">location_part =</span> location_text <span class="sc">|&gt;</span> <span class="fu">str_split</span>(<span class="st">","</span>) <span class="sc">|&gt;</span> <span class="fu">modify</span>(<span class="cf">function</span>(x) <span class="fu">rev</span>(x)) </span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_wider</span>(location_part, <span class="at">names_sep =</span> <span class="st">"_"</span>)</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>gigs_main <span class="ot">&lt;-</span> gigs_main <span class="sc">|&gt;</span> </span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">location_part_1 =</span> <span class="fu">str_trim</span>(location_part_1)</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>What countries has Frank been to the most?</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>gigs <span class="sc">|&gt;</span> <span class="fu">group_by</span>(location_part_1) <span class="sc">|&gt;</span> </span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span> </span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="sc">|&gt;</span> <span class="fu">rename</span>(<span class="at">country =</span> location_part_1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>gigs_country_sum <span class="ot">&lt;-</span> gigs_main <span class="sc">|&gt;</span> <span class="fu">group_by</span>(location_part_1, gig_year) <span class="sc">|&gt;</span> </span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span> </span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">country =</span> location_part_1) <span class="sc">|&gt;</span> </span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(gig_year, <span class="fu">desc</span>(n)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'location_part_1'. You can override using
+the `.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>gigs_country_sum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 54 × 2
-   country            n
-   &lt;chr&gt;          &lt;int&gt;
- 1 " UK"           1170
- 2 " USA"           933
- 3 " Germany"       224
- 4 " Canada"        145
- 5 " Australia"      66
- 6 " France"         46
- 7 " Austria"        40
- 8 " Switzerland"    39
- 9 " Netherlands"    38
-10 " Ireland"        31
-# ℹ 44 more rows</code></pre>
+<pre><code># A tibble: 335 × 3
+# Groups:   country [54]
+   country          gig_year     n
+   &lt;chr&gt;               &lt;dbl&gt; &lt;int&gt;
+ 1 UK                   2004     1
+ 2 UK                   2005    28
+ 3 UK                   2006   138
+ 4 France               2006    12
+ 5 Latvia               2006     7
+ 6 Northern Ireland     2006     4
+ 7 Russia               2006     4
+ 8 Belgium              2006     2
+ 9 Lithuania            2006     2
+10 Estonia              2006     1
+# ℹ 325 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>gigs_country_sum <span class="sc">|&gt;</span> <span class="fu">spread</span>(gig_year, n, <span class="at">fill=</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 54 × 23
+# Groups:   country [54]
+   country `2004` `2005` `2006` `2007` `2008` `2009` `2010` `2011` `2012` `2013`
+   &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+ 1 Austra…      0      0      0      0      0      0      8      5      9      8
+ 2 Austria      0      0      0      0      1      3      0      5      1      5
+ 3 Belgium      0      0      2      0      3      2      1      2      1      2
+ 4 Bulgar…      0      0      0      0      0      0      0      0      0      0
+ 5 Canada       0      0      0      0      0      9     20     11     10     12
+ 6 China        0      0      0      0      0      0      6      0      0      2
+ 7 Croatia      0      0      0      0      0      0      0      1      1      0
+ 8 Czech …      0      0      0      0      0      0      0      0      1      0
+ 9 Denmark      0      0      0      0      0      2      0      1      0      1
+10 Estonia      0      0      1      0      0      0      0      0      0      0
+# ℹ 44 more rows
+# ℹ 12 more variables: `2014` &lt;dbl&gt;, `2015` &lt;dbl&gt;, `2016` &lt;dbl&gt;, `2017` &lt;dbl&gt;,
+#   `2018` &lt;dbl&gt;, `2019` &lt;dbl&gt;, `2020` &lt;dbl&gt;, `2021` &lt;dbl&gt;, `2022` &lt;dbl&gt;,
+#   `2023` &lt;dbl&gt;, `2024` &lt;dbl&gt;, `2025` &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>gigs_country_sum <span class="sc">|&gt;</span> <span class="fu">spread</span>(gig_year, n, <span class="at">fill=</span><span class="cn">NA</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_to_rownames</span>(<span class="at">var =</span> <span class="st">"country"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  ggpubr<span class="sc">::</span><span class="fu">ggballoonplot</span>(<span class="at">fill =</span> <span class="st">"value"</span>, <span class="at">show.label =</span> <span class="cn">TRUE</span>, <span class="at">size.range =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">15</span>)) <span class="sc">+</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Frank Turner Gigs by Country"</span>) <span class="sc">+</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">gradient_fill</span>(<span class="fu">c</span>(<span class="st">"white"</span>, <span class="st">"red"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The `&lt;scale&gt;` argument of `guides()` cannot be `FALSE`. Use "none" instead as
+of ggplot2 3.3.4.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 853 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 853 rows containing missing values or values outside the scale range
+(`geom_text()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="FrankTurner_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Most popular cities/states?</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>gigs <span class="sc">|&gt;</span> <span class="fu">group_by</span>(location_part_2) <span class="sc">|&gt;</span> </span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span> </span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>gigs_main <span class="sc">|&gt;</span> <span class="fu">group_by</span>(location_part_2) <span class="sc">|&gt;</span> </span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span> </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 552 × 2
    location_part_2     n

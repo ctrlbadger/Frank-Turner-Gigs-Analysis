@@ -16,77 +16,135 @@ library(lubridate)
 
 library(stringi)
 
+source(here::here("R", "frank_scrape.R"))
+
 ```
 
+# Downloading
+
+The most up-to-date Frank Turner gig data is downloaded from <https://frank-turner.com/basic-archive/>.
+
+```{r}
+url_main_gigs <- "https://frank-turner.com/basic-archive/"
+url_other_gigs <- "https://frank-turner.com/md-archive/"
+
+gigs_main_raw_text <- get_live_gigs(url_main_gigs)
+gigs_other_raw_text <- get_other_gigs(url_other_gigs)
+```
+
+# Cleaning
+
+```{r}
+gigs_other_raw_text$million_dead[209] <- "1st May 2025, Newcastle Cluny"
+gigs_other_raw_text$kneejerk[c(16, 17)] <- c("25th September 1999 – London (venue unknown)", 
+                                        "24th October 1999 – The Ferryboat, Norwich")
+```
 
 # Wrangling
 
 ```{r}
-# Import Data
-gigs <- read_csv("data_raw/FrankTurnerGigs.csv", 
-                 col_types = cols_only(ID = col_guess(), Raw = col_guess())) |>
-  rename(id = ID, gig_text = Raw)
+make_gig_table <- function(gig_raw_text, type_name) {
+  tibble(gig_text = gig_raw_text, gig_number = 1:length(gig_raw_text), type=type_name)
+} 
+gigs_main <- make_gig_table(gigs_main_raw_text, "solo")
+gigs_mingle_harde <- make_gig_table(gigs_other_raw_text$mingle_harde, "mingle_harde")
+gigs_million_dead <- make_gig_table(gigs_other_raw_text$million_dead, "million_dead")
+gigs_record_buying_public <- make_gig_table(gigs_other_raw_text$record_buying_public, "record_buying_public")
+gigs_kneejerk <- make_gig_table(gigs_other_raw_text$kneejerk, "kneejerk")
 
-gigs$gig_text <- gigs$gig_text |> stri_enc_toutf8()
 ```
 
 ```{r}
 # Split Data
 
-gigs$gig_split_list <- gigs$gig_text |> 
-  str_split("@", n=2)
+add_date_columns <- function(df) {
+  df |> mutate(
+    gig_date = dmy(date_text),
+    gig_year = year(gig_date),
+    gig_month = month(gig_date, label = TRUE),
+    gig_day = wday(gig_date, label=TRUE)
+  )
+}
+gigs_main <- gigs_main |> 
+  separate_wider_delim(
+    gig_text, delim = "@", names = c("date_text", "location_text"), too_many = "merge", cols_remove = FALSE) |>
+  add_date_columns()
 
-gigs <- gigs |> 
-  unnest_wider(gig_split_list, names_sep = "_") |>
-  rename(date_text = gig_split_list_1, location_text = gig_split_list_2)
+gigs_mingle_harde <- gigs_mingle_harde |> 
+  separate_wider_delim(
+    gig_text, delim = "@", names = c("date_text", "location_text"), too_many = "merge", cols_remove = FALSE) |>
+  add_date_columns()
+
+gigs_million_dead <- gigs_million_dead |> 
+  separate_wider_delim(
+    gig_text, delim = ",", names = c("date_text", "location_text"), too_many = "merge", cols_remove = FALSE) |>
+  add_date_columns()
+
+gigs_kneejerk <- gigs_kneejerk |> 
+  separate_wider_delim(
+    gig_text, delim = "–", names = c("date_text", "location_text"), too_many = "merge", cols_remove = FALSE) |>
+  add_date_columns()
+
+gigs <- bind_rows(gigs_main, gigs_mingle_harde, gigs_million_dead, gigs_kneejerk)
 
 ```
 
 ```{r}
-
-gigs <- gigs |> mutate(
-  gig_date = dmy(date_text),
-  gig_year = year(gig_date),
-  gig_month = month(gig_date, label = TRUE),
-  gig_day = wday(gig_date, label=TRUE)
-)
 ```
 
 # Date Summary Statistics
 
-How many gigs per year? 
+How many gigs per year?
+
 ```{r}
-gigs |> group_by(gig_year) |> summarise(n=n())
+gigs_main |> group_by(gig_year) |> summarise(n=n())
 ```
 
 How many gigs per month
+
 ```{r}
-gigs |> group_by(gig_month) |> summarise(n=n())
+gigs_main |> group_by(gig_month) |> summarise(n=n())
 ```
 
 What are the most popular days for gigs?
 
-```{r} 
-gigs |> group_by(gig_day) |> summarise(n=n())
+```{r}
+gigs_main |> group_by(gig_day) |> summarise(n=n())
 
 gigs_table_year_date <- gigs %>%
   group_by(gig_year, gig_day) %>%
   tally() %>%
   spread(gig_day, n, fill=0) |> relocate(Sun, .after=Sat)
 
+
 gigs_table_year_date 
 ```
 
-
 How many gigs per year and per month in a table?
+
 ```{r}
-gigs_date_table <- table(gigs$gig_year, gigs$gig_month)
+gigs_date_table <- table(gigs_main$gig_year, gigs_main$gig_month)
 
 gigs_date_table
+
+gigs |> ggplot(aes(gig_month, fill = type)) + 
+  geom_histogram(stat = "count") + 
+  facet_wrap(vars(gig_year)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(fill = "Project", title = "Frank Turner Gigs by Project", y = "Count", x = "Month")
+```
+```{r}
+
+# gigs_main |> ggplot(aes(location_part_1)) + 
+#   geom_col() + 
+#   facet_wrap(vars(gig_year)) + 
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+#   labs(fill = "Project", title = "Frank Turner Solo Gigs by Location", y = "Count", x = "Month")
 ```
 Cross Tabulation with Tidyverse
+
 ```{r}
-gigs_contingency <- gigs %>%
+gigs_contingency <- gigs_main %>%
   group_by(gig_year, gig_month) %>%
   tally() %>%
   spread(gig_month, n, fill=0)
@@ -94,49 +152,64 @@ gigs_contingency <- gigs %>%
 gigs_contingency
 ```
 
-
 ```{r}
 library(ggpubr)
 
 
-gigs %>%
+gigs_main %>%
   group_by(gig_month, gig_year) %>%
   tally() |>
   spread(gig_year, n) |> 
   column_to_rownames(var = "gig_month") |>
-  ggballoonplot(fill="value") + 
+  ggpubr::ggballoonplot(fill="value") + 
     scale_fill_gradient2() + 
     guides(fill="none") +
     labs(title="Frank Turner Gigs 2004 - 2025")
 ```
 
-# Location Summary Statistics
+#  Location Summary Statistics
 
 ```{r}
-gigs <- gigs |> 
+gigs_main <- gigs_main |> 
   mutate(
     location_part = location_text |> str_split(",") |> modify(function(x) rev(x)) 
   ) |>
   unnest_wider(location_part, names_sep = "_")
 
-gigs <- gigs |> 
+gigs_main <- gigs_main |> 
   mutate(
     location_part_1 = str_trim(location_part_1)
   )
 ```
 
-
 What countries has Frank been to the most?
 
 ```{r}
-gigs |> group_by(location_part_1) |> 
+gigs_country_sum <- gigs_main |> group_by(location_part_1, gig_year) |> 
   summarise(n = n()) |> 
-  arrange(desc(n)) |> rename(country = location_part_1)
+  rename(country = location_part_1) |> 
+  arrange(gig_year, desc(n)) 
+gigs_country_sum
+
+gigs_country_sum |> spread(gig_year, n, fill=0)
+
+gigs_country_sum |> spread(gig_year, n, fill=NA) |> 
+  column_to_rownames(var = "country") |> 
+  ggpubr::ggballoonplot(fill = "value", show.label = TRUE, size.range = c(5, 15)) +
+  guides(fill = FALSE) +
+    labs(title="Frank Turner Gigs by Country") +
+    gradient_fill(c("white", "red"))
+
+
+
 ```
+
 Most popular cities/states?
+
 ```{r}
-gigs |> group_by(location_part_2) |> 
+gigs_main |> group_by(location_part_2) |> 
   summarise(n = n()) |> 
   arrange(desc(n))
 ```
+
 # Conclusions

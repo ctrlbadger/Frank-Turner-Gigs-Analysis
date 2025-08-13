@@ -2,8 +2,6 @@ library(tidyverse)
 library(rvest)
 library(here)
 
-url_main_live_gigs <- "https://frank-turner.com/basic-archive/"
-url_other_gigs <- "https://frank-turner.com/md-archive/"
 
 get_live_gigs <- function(url_live_gigs) {
   # Load the HTML file
@@ -51,5 +49,14 @@ get_other_gigs <- function(url_other_gigs) {
        kneejerk = kneejerk)
 }
 
-gigs_main_raw <- get_live_gigs(url_live_gigs)
-gigs_other_raw <- get_other_gigs(url_other_gigs)
+
+if (sys.nframe() == 0){
+  # ... do main stuff
+  url_main_gigs <- "https://frank-turner.com/basic-archive/"
+  url_other_gigs <- "https://frank-turner.com/md-archive/"
+  
+  gigs_main_raw <- get_live_gigs(url_main_gigs)
+  gigs_other_raw <- get_other_gigs(url_other_gigs)
+}
+
+
