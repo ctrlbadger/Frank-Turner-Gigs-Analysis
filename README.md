@@ -6,7 +6,9 @@ A small project to scrape Frank Turner's website and analyse his gigs for both s
 
 ## Analysis
 
-With over 3000 shows to his name, Franks has averaged over 150 gigs a year since he first began playing in 2004! It's interesting how the data clearly shows the impact of the pandemic, and also the frenzied cramming in of gigs before a big milestone concert. ![alt text](https://github.com/ctrlbadger/Frank-Turner-Gigs-Analysis/blob/master/assets/FrankTurnerGigsbyProject.png?raw=true)
+With over 3000 shows to his name, Franks has averaged over 150 gigs a year since he first began playing in 2004! Franks busiest years were 2009 with 210 gigs followed by 2010 (206) and and 2013 (196).
+
+It's interesting how the data clearly shows the impact of the pandemic, and also the frenzied cramming in of gigs before a big milestone concert. ![alt text](https://github.com/ctrlbadger/Frank-Turner-Gigs-Analysis/blob/master/assets/FrankTurnerGigsbyProject.png?raw=true)
 
 The most Gigs in one day was on 26th of June 2009 where Frank performed 19 times around London! Second only to the 5th May 2024 with 8 gigs in one day, and 7 the day before that.
 
